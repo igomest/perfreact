@@ -1,21 +1,41 @@
-import { memo } from "react";
+import { memo, useState } from "react";
+import dynamic from "next/dynamic";
+import { AddProductToWishlistProps } from "./AddProductToWishlist";
+
+// Carrega o código de AddProductToWishList, somente se o usuário fizer uma ação. No caso, "Adicionar aos favoritos".
+const AddProductToWishlist = dynamic<AddProductToWishlistProps>(() => { 
+  return import("./AddProductToWishlist").then(
+    (mod) => mod.AddProductToWishlist // o mod é usado para poder utilizar o export function em vez do export default
+  );
+}, {
+    loading: () => <span>Carregando...</span>
+});
 
 interface ProductItemProps {
   products: {
     id: number;
     price: number;
     title: string;
+    priceFormatted: string;
   };
   onAddToWishlist: (id: number) => void;
 }
 
 function ProductItemComponent({ product, onAddToWishlist }) {
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
+
   return (
     <div>
-      {product.title} = <strong>{product.price}</strong>
-      <button onClick={() => onAddToWishlist(product.id)}>
-        Add to wishlist
+      {product.title} = <strong>{product.priceFormatted}</strong>
+      <button onClick={() => setIsAddingToWishlist(true)}>
+        Adicionar aos favoritos
       </button>
+      {isAddingToWishlist && (
+        <AddProductToWishlist
+          onAddToWishlist={() => onAddToWishlist(product.id)}
+          onRequestClose={() => setIsAddingToWishlist(false)}
+        />
+      )}
     </div>
   );
 }
